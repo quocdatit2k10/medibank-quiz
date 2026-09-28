@@ -11,6 +11,19 @@ medibank-quiz/
 
 ## Getting Started
 
+# Tab 1 — Backend API
+cd backend && source venv/bin/activate && uvicorn main:app --reload
+# → http://localhost:8000  |  Swagger docs: http://localhost:8000/docs
+
+# Tab 2 — Admin Portal
+cd admin-portal && npm run dev
+# → http://localhost:5173
+
+# Tab 3 — User App
+cd user-app && npm start
+# → http://localhost:4200
+
+
 ### 1. Backend (Python / FastAPI)
 
 ```bash
