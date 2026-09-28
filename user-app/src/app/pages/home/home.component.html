@@ -1,0 +1,32 @@
+<div class="home">
+  <div class="hero">
+    <div class="logo">🏥</div>
+    <h1>Welcome to Medibank Quiz</h1>
+    <p class="subtitle">Your OSHC educational platform</p>
+    <p class="api-status">{{ apiStatus }}</p>
+  </div>
+
+  <div class="card-section">
+    <div class="info-card">
+      <div class="card-icon">📬</div>
+      <h2>Check Your Notifications</h2>
+      <p>You'll receive a notification 1 week and 3 weeks after your arrival with educational content tailored for you.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="card-icon">🎬</div>
+      <h2>Watch &amp; Learn</h2>
+      <p>Watch a short video about your OSHC cover and how to make the most of it as a student.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="card-icon">🏆</div>
+      <h2>Quiz &amp; Win</h2>
+      <p>Complete the quiz with 100% and earn a <strong>$50 campus café voucher</strong>!</p>
+    </div>
+  </div>
+
+  <div class="cta" *ngIf="hasContent">
+    <a routerLink="/quiz" class="btn-primary">Start My Quiz</a>
+  </div>
+</div>

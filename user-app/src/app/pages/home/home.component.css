@@ -1,0 +1,56 @@
+.home {
+  min-height: 100vh;
+  padding: 40px 24px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.logo { font-size: 3rem; margin-bottom: 12px; }
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #003087;
+  margin-bottom: 8px;
+}
+
+.subtitle { color: #555; font-size: 1.05rem; margin-bottom: 16px; }
+.api-status { font-size: 0.85rem; color: #888; }
+
+.card-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+
+.card-icon { font-size: 2rem; margin-bottom: 12px; }
+.info-card h2 { font-size: 1.05rem; color: #003087; margin-bottom: 8px; }
+.info-card p { font-size: 0.9rem; color: #555; line-height: 1.5; }
+
+.cta { text-align: center; margin-top: 40px; }
+
+.btn-primary {
+  display: inline-block;
+  background: #003087;
+  color: white;
+  padding: 14px 36px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover { background: #004db3; }

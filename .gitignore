@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.DS_Store
+*.log
+npm-debug.log*
+
+# React build
+admin-portal/dist/
+admin-portal/build/
+
+# Angular build
+user-app/dist/
+
+# IDE
+.vscode/
+.idea/
+
+# Env files
+*.env
+.env.local
+.env.*.local
