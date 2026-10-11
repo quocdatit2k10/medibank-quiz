@@ -69,3 +69,24 @@ Runs at: http://localhost:4200
 | Backend API   | 8000  |
 | Admin Portal  | 5173  |
 | User App      | 4200  |
+
+
+
+
+## Video prompt example
+What is a GP and when should an international student see one?
+
+How does Medibank OSHC help pay for GP visits in Australia?
+
+What is the Online Doctor service and how can students use it 24/7?
+
+What's the difference between a public and private hospital in Australia?
+
+## Quiz prompt example
+Test students on what a GP is, what they treat, and how to find one in Australia.
+
+Quiz students on how Medibank OSHC covers GP visit costs and what an out-of-pocket expense is.
+
+Check students understand the Online Doctor service — availability, cost, and who can use it.
+
+Test knowledge of hospital types in Australia and how Medibank's Members' Choice network helps.

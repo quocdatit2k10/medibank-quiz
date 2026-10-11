@@ -1,20 +1,7 @@
 import React, { useState } from 'react'
-import { Wand2, Video, FileQuestion, Link2, Clock, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Wand2, Video, FileQuestion, Link2, Clock, CheckCircle2, ChevronRight, BookmarkPlus } from 'lucide-react'
 import { useAppStore } from '../store/AppContext'
-
-/* ── Real Gemini generation via backend ──────────────────── */
-async function generateWithGemini(type, prompt) {
-  const res = await fetch('/api/v1/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type, prompt }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail ?? `Server error ${res.status}`)
-  }
-  return res.json()
-}
+import { generateContent } from '../api'
 
 /* ── Step indicator ──────────────────────────────────────── */
 function Steps({ current }) {
@@ -44,22 +31,40 @@ function Steps({ current }) {
   )
 }
 
+/* ── Error box ───────────────────────────────────────────── */
+function ErrorBox({ message }) {
+  if (!message) return null
+  return (
+    <div style={{ marginTop: 10, padding: '8px 12px', background: 'var(--red-light)', border: '1px solid var(--red)', borderRadius: 6, fontSize: 12.5, color: 'var(--red)' }}>
+      ⚠ {message}
+    </div>
+  )
+}
+
 /* ── Step 1: Generate ────────────────────────────────────── */
 function StepGenerate({ onDone }) {
+  const { addVideo, addQuiz } = useAppStore()
   const [videoPrompt, setVideoPrompt] = useState('')
-  const [quizPrompt, setQuizPrompt] = useState('')
-  const [generating, setGenerating] = useState(null) // 'video' | 'quiz' | null
+  const [quizPrompt, setQuizPrompt]   = useState('')
+  const [generating, setGenerating]   = useState(null) // 'video' | 'quiz' | null
+  const [saving, setSaving]           = useState(null) // 'video' | 'quiz' | null
   const [generatedVideo, setGeneratedVideo] = useState(null)
-  const [generatedQuiz, setGeneratedQuiz] = useState(null)
-  const [errors, setErrors] = useState({})   // { video?: string, quiz?: string }
+  const [generatedQuiz, setGeneratedQuiz]   = useState(null)
+  const [savedVideo, setSavedVideo]   = useState(false)
+  const [savedQuiz, setSavedQuiz]     = useState(false)
+  const [errors, setErrors] = useState({})
 
   async function handleGenerate(type) {
     const prompt = type === 'video' ? videoPrompt : quizPrompt
     if (!prompt.trim()) return
     setGenerating(type)
     setErrors(prev => ({ ...prev, [type]: undefined }))
+    // Reset saved state when regenerating
+    if (type === 'video') setSavedVideo(false)
+    else setSavedQuiz(false)
     try {
-      const result = await generateWithGemini(type, prompt)
+      const result = await generateContent(type, prompt)
+      result.prompt = prompt
       if (type === 'video') setGeneratedVideo(result)
       else setGeneratedQuiz(result)
     } catch (err) {
@@ -69,10 +74,37 @@ function StepGenerate({ onDone }) {
     }
   }
 
+  async function handleSaveToLibrary(type) {
+    setSaving(type)
+    setErrors(prev => ({ ...prev, [type]: undefined }))
+    try {
+      if (type === 'video') {
+        await addVideo({
+          title:            generatedVideo.title,
+          prompt:           generatedVideo.prompt,
+          storyboard:       generatedVideo.storyboard,
+          duration_seconds: generatedVideo.duration_seconds ?? null,
+        })
+        setSavedVideo(true)
+      } else {
+        await addQuiz({
+          title:     generatedQuiz.title,
+          prompt:    generatedQuiz.prompt,
+          questions: generatedQuiz.questions,
+        })
+        setSavedQuiz(true)
+      }
+    } catch (err) {
+      setErrors(prev => ({ ...prev, [type]: err.message }))
+    } finally {
+      setSaving(null)
+    }
+  }
+
   return (
     <div>
       <div className="two-col">
-        {/* Video */}
+        {/* ── Video card ── */}
         <div className="card">
           <div className="card-header">
             <h2 style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -95,18 +127,35 @@ function StepGenerate({ onDone }) {
               onClick={() => handleGenerate('video')}
               disabled={!videoPrompt.trim() || generating === 'video'}
             >
-              {generating === 'video' ? <><span className="spinner" /> Generating…</> : <><Wand2 size={14} /> Generate video</>}
+              {generating === 'video'
+                ? <><span className="spinner" /> Generating…</>
+                : <><Wand2 size={14} /> Generate video</>}
             </button>
-
-            {errors.video && (
-              <div style={{ marginTop: 10, padding: '8px 12px', background: 'var(--red-light)', border: '1px solid var(--red)', borderRadius: 6, fontSize: 12.5, color: 'var(--red)' }}>
-                ⚠ {errors.video}
-              </div>
-            )}
+            <ErrorBox message={errors.video} />
 
             {generatedVideo && (
               <div className="preview-card mt-4">
-                <div className="preview-card-header">📹 Storyboard preview — {generatedVideo.title}</div>
+                <div className="preview-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>
+                    📹 Storyboard — {generatedVideo.title}
+                    {generatedVideo.duration_seconds && (
+                      <span className="badge badge-blue" style={{ marginLeft: 8 }}>
+                        ⏱ {generatedVideo.duration_seconds}s
+                      </span>
+                    )}
+                  </span>
+                  {savedVideo ? (
+                    <span className="badge badge-green"><CheckCircle2 size={11} /> Saved</span>
+                  ) : (
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => handleSaveToLibrary('video')}
+                      disabled={saving === 'video'}
+                    >
+                      {saving === 'video' ? <><span className="spinner spinner-blue" style={{ width: 12, height: 12 }} /> Saving…</> : <><BookmarkPlus size={13} /> Save to library</>}
+                    </button>
+                  )}
+                </div>
                 <div className="preview-card-body">
                   {generatedVideo.storyboard.map((scene, i) => (
                     <p key={i} style={{ marginBottom: i < generatedVideo.storyboard.length - 1 ? 8 : 0 }}>
@@ -119,7 +168,7 @@ function StepGenerate({ onDone }) {
           </div>
         </div>
 
-        {/* Quiz */}
+        {/* ── Quiz card ── */}
         <div className="card">
           <div className="card-header">
             <h2 style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -132,7 +181,7 @@ function StepGenerate({ onDone }) {
               <label className="form-label">Describe the quiz topic</label>
               <textarea
                 className="form-textarea"
-                placeholder="e.g. Test students on the key facts about OSHC — what it covers, how to claim, and when to activate…"
+                placeholder="e.g. Test students on key OSHC facts — what's covered, how to claim, and when to activate…"
                 value={quizPrompt}
                 onChange={e => setQuizPrompt(e.target.value)}
               />
@@ -142,18 +191,28 @@ function StepGenerate({ onDone }) {
               onClick={() => handleGenerate('quiz')}
               disabled={!quizPrompt.trim() || generating === 'quiz'}
             >
-              {generating === 'quiz' ? <><span className="spinner" /> Generating…</> : <><Wand2 size={14} /> Generate quiz</>}
+              {generating === 'quiz'
+                ? <><span className="spinner" /> Generating…</>
+                : <><Wand2 size={14} /> Generate quiz</>}
             </button>
-
-            {errors.quiz && (
-              <div style={{ marginTop: 10, padding: '8px 12px', background: 'var(--red-light)', border: '1px solid var(--red)', borderRadius: 6, fontSize: 12.5, color: 'var(--red)' }}>
-                ⚠ {errors.quiz}
-              </div>
-            )}
+            <ErrorBox message={errors.quiz} />
 
             {generatedQuiz && (
               <div className="preview-card mt-4">
-                <div className="preview-card-header">📝 Quiz preview — {generatedQuiz.title}</div>
+                <div className="preview-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>📝 Quiz — {generatedQuiz.title}</span>
+                  {savedQuiz ? (
+                    <span className="badge badge-green"><CheckCircle2 size={11} /> Saved</span>
+                  ) : (
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => handleSaveToLibrary('quiz')}
+                      disabled={saving === 'quiz'}
+                    >
+                      {saving === 'quiz' ? <><span className="spinner spinner-blue" style={{ width: 12, height: 12 }} /> Saving…</> : <><BookmarkPlus size={13} /> Save to library</>}
+                    </button>
+                  )}
+                </div>
                 <div className="preview-card-body">
                   {generatedQuiz.questions.map((q, i) => (
                     <div key={i} style={{ marginBottom: i < generatedQuiz.questions.length - 1 ? 12 : 0 }}>
@@ -185,54 +244,65 @@ function StepGenerate({ onDone }) {
 
 /* ── Step 2: Link & Schedule ─────────────────────────────── */
 const TIMING_OPTIONS = [
-  { value: '1_week', label: '1 week after arrival' },
+  { value: '1_week',  label: '1 week after arrival' },
   { value: '3_weeks', label: '3 weeks after arrival' },
 ]
 
 function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
   const { videos, quizzes, addVideo, addQuiz, addPackage } = useAppStore()
 
-  // Either use the freshly-generated items or pick from existing library
-  const [videoSource, setVideoSource] = useState('new') // 'new' | 'existing'
-  const [quizSource, setQuizSource] = useState('new')
+  const [videoSource, setVideoSource]     = useState('new')
+  const [quizSource, setQuizSource]       = useState('new')
   const [existingVideoId, setExistingVideoId] = useState('')
-  const [existingQuizId, setExistingQuizId] = useState('')
-  const [timing, setTiming] = useState('1_week')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [existingQuizId, setExistingQuizId]   = useState('')
+  const [timing, setTiming]   = useState('1_week')
+  const [saving, setSaving]   = useState(false)
+  const [saved, setSaved]     = useState(false)
+  const [saveError, setSaveError] = useState(null)
 
   async function handleSave() {
     setSaving(true)
-    await new Promise(r => setTimeout(r, 800))
+    setSaveError(null)
+    try {
+      // 1. Persist video if new
+      let videoRecord
+      if (videoSource === 'new') {
+        videoRecord = await addVideo({
+          title:            generatedVideo.title,
+          prompt:           generatedVideo.prompt,
+          storyboard:       generatedVideo.storyboard,
+          duration_seconds: generatedVideo.duration_seconds ?? null,
+        })
+      } else {
+        videoRecord = videos.find(v => v.id === existingVideoId)
+      }
 
-    // Persist the chosen video
-    let videoRecord
-    if (videoSource === 'new') {
-      videoRecord = { ...generatedVideo, createdAt: new Date().toISOString() }
-      addVideo(videoRecord)
-    } else {
-      videoRecord = videos.find(v => v.id === existingVideoId)
+      // 2. Persist quiz if new
+      let quizRecord
+      if (quizSource === 'new') {
+        quizRecord = await addQuiz({
+          title:     generatedQuiz.title,
+          prompt:    generatedQuiz.prompt,
+          questions: generatedQuiz.questions,
+        })
+      } else {
+        quizRecord = quizzes.find(q => q.id === existingQuizId)
+      }
+
+      // 3. Create package linking the two
+      await addPackage({
+        videoId: videoRecord.id,
+        quizId:  quizRecord.id,
+        timing,
+      })
+
+      setSaved(true)
+      setTimeout(() => onSaved(), 1200)
+    } catch (err) {
+      setSaveError(err.message)
+    } finally {
+      setSaving(false)
     }
-
-    // Persist the chosen quiz
-    let quizRecord
-    if (quizSource === 'new') {
-      quizRecord = { ...generatedQuiz, createdAt: new Date().toISOString() }
-      addQuiz(quizRecord)
-    } else {
-      quizRecord = quizzes.find(q => q.id === existingQuizId)
-    }
-
-    addPackage({
-      videoTitle: videoRecord?.title ?? '—',
-      quizTitle: quizRecord?.title ?? '—',
-      timing,
-      createdAt: new Date().toISOString(),
-    })
-
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => onSaved(), 1200)
   }
 
   if (saved) {
@@ -240,14 +310,14 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
       <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
         <CheckCircle2 size={40} style={{ color: 'var(--green)', margin: '0 auto 12px' }} />
         <p className="font-semibold" style={{ fontSize: 16, marginBottom: 4 }}>Package saved!</p>
-        <p className="text-muted text-sm">Redirecting to Packages…</p>
+        <p className="text-muted text-sm">Redirecting…</p>
       </div>
     )
   }
 
   const canSave =
     (videoSource === 'new' || existingVideoId) &&
-    (quizSource === 'new' || existingQuizId) &&
+    (quizSource  === 'new' || existingQuizId)  &&
     timing
 
   return (
@@ -260,13 +330,13 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
           </h2>
         </div>
         <div className="card-body">
-          {/* Video selection */}
+          {/* Video */}
           <div className="form-group">
             <label className="form-label">Video</label>
-            <div className="row mb-4" style={{ marginBottom: 8 }}>
+            <div className="row" style={{ marginBottom: 8, gap: 16 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
                 <input type="radio" value="new" checked={videoSource === 'new'} onChange={() => setVideoSource('new')} />
-                Use just-generated video
+                Use just-generated
               </label>
               {videos.length > 0 && (
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
@@ -290,13 +360,13 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
 
           <hr className="divider" />
 
-          {/* Quiz selection */}
+          {/* Quiz */}
           <div className="form-group">
             <label className="form-label">Quiz</label>
-            <div className="row mb-4" style={{ marginBottom: 8 }}>
+            <div className="row" style={{ marginBottom: 8, gap: 16 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
                 <input type="radio" value="new" checked={quizSource === 'new'} onChange={() => setQuizSource('new')} />
-                Use just-generated quiz
+                Use just-generated
               </label>
               {quizzes.length > 0 && (
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
@@ -320,7 +390,7 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
         </div>
       </div>
 
-      {/* Right: schedule + save */}
+      {/* Right: timing + save */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div className="card">
           <div className="card-header">
@@ -333,11 +403,19 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
               Only active combinations for the selected timing appear in the student app.
             </p>
             {TIMING_OPTIONS.map(opt => (
-              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', border: `2px solid ${timing === opt.value ? 'var(--blue)' : 'var(--gray-200)'}`, borderRadius: 8, marginBottom: 8, cursor: 'pointer', background: timing === opt.value ? 'var(--blue-light)' : 'white', transition: 'all 0.15s' }}>
+              <label
+                key={opt.value}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px',
+                  border: `2px solid ${timing === opt.value ? 'var(--blue)' : 'var(--gray-200)'}`,
+                  borderRadius: 8, marginBottom: 8, cursor: 'pointer',
+                  background: timing === opt.value ? 'var(--blue-light)' : 'white',
+                  transition: 'all 0.15s',
+                }}
+              >
                 <input
-                  type="radio"
-                  name="timing"
-                  value={opt.value}
+                  type="radio" name="timing" value={opt.value}
                   checked={timing === opt.value}
                   onChange={() => setTiming(opt.value)}
                   style={{ accentColor: 'var(--blue)' }}
@@ -350,13 +428,17 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
           </div>
         </div>
 
+        <ErrorBox message={saveError} />
+
         <button
           className="btn btn-success"
           style={{ justifyContent: 'center', padding: '11px 20px' }}
           onClick={handleSave}
           disabled={!canSave || saving}
         >
-          {saving ? <><span className="spinner" /> Saving…</> : <><CheckCircle2 size={15} /> Save package</>}
+          {saving
+            ? <><span className="spinner" /> Saving…</>
+            : <><CheckCircle2 size={15} /> Save package</>}
         </button>
       </div>
     </div>
@@ -365,9 +447,9 @@ function StepSchedule({ generatedVideo, generatedQuiz, onSaved }) {
 
 /* ── Main page ───────────────────────────────────────────── */
 export default function ContentStudio() {
-  const [step, setStep] = useState(1)
+  const [step, setStep]                   = useState(1)
   const [generatedVideo, setGeneratedVideo] = useState(null)
-  const [generatedQuiz, setGeneratedQuiz] = useState(null)
+  const [generatedQuiz, setGeneratedQuiz]   = useState(null)
 
   function handleGenerateDone(video, quiz) {
     setGeneratedVideo(video)
@@ -376,7 +458,6 @@ export default function ContentStudio() {
   }
 
   function handleSaved() {
-    // Reset to start a fresh episode
     setStep(1)
     setGeneratedVideo(null)
     setGeneratedQuiz(null)
@@ -387,7 +468,7 @@ export default function ContentStudio() {
       <div className="page-header">
         <div>
           <h1>Content Studio</h1>
-          <p>Create an episode — generate content, pair its quiz, and choose when students receive it.</p>
+          <p>Generate a reel &amp; quiz with Gemini AI, then schedule delivery to students.</p>
         </div>
       </div>
       <div className="page-body">

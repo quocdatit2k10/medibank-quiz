@@ -10,8 +10,8 @@ import {
 
 import Dashboard from './pages/Dashboard'
 import ContentStudio from './pages/ContentStudio'
-import Videos from './pages/Videos'
-import Quizzes from './pages/Quizzes'
+import VideoList from './videos/VideoList'
+import QuizList from './quizzes/QuizList'
 import Packages from './pages/Packages'
 
 function Sidebar() {
@@ -58,8 +58,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/studio" element={<ContentStudio />} />
-            <Route path="/videos" element={<Videos />} />
-            <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/videos" element={<VideoList />} />
+            <Route path="/quizzes" element={<QuizList />} />
             <Route path="/packages" element={<Packages />} />
           </Routes>
         </div>
