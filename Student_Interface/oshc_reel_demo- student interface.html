@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OSHC Interactive Mini-Series — Episode 1</title>
+<style>
+  :root{
+    --navy:#12263f; --ink:#1b1b1f; --muted:#6b7280;
+    --red:#d64545; --red-bg:#fdecec;
+    --green:#1f8f5f; --green-bg:#e6f6ee;
+    --accent:#e8501a; --accent-dark:#c13f10;
+    --purple:#5b4bd1; --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#0e1624;color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    padding:12px;
+  }
+  /* Presenter controls (outside the phone, for the teacher demo) */
+  .presenter{
+    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;
+    color:#aab4c5;font-size:13px;
+  }
+  .presenter button{
+    background:#1d2a40;color:#dbe4f3;border:1px solid #2d3e5c;border-radius:999px;
+    padding:7px 14px;font-size:13px;cursor:pointer;
+  }
+  .presenter button:hover{background:#27385a}
+
+  .phone{
+    position:relative;width:390px;height:780px;max-height:calc(100vh - 90px);
+    background:#000;border-radius:42px;border:10px solid #1b2433;
+    box-shadow:0 30px 60px rgba(0,0,0,.5);overflow:hidden;
+  }
+  .screen{
+    position:absolute;inset:0;display:none;flex-direction:column;background:#fff;
+  }
+  .screen.active{display:flex}
+
+  /* ---------- Screen 1: SMS ---------- */
+  .sms{background:#f2f2f7}
+  .sms-top{background:#fff;padding:44px 16px 12px;text-align:center;border-bottom:1px solid #e3e3e8}
+  .sms-top .avatar{width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-weight:700}
+  .sms-top .name{font-size:13px;font-weight:600}
+  .sms-body{flex:1;padding:18px 14px;display:flex;flex-direction:column;gap:10px;overflow:auto}
+  .time{text-align:center;font-size:11px;color:#8a8a93}
+  .bubble{background:#e5e5ea;border-radius:18px 18px 18px 4px;padding:12px 14px;max-width:86%;font-size:15px;line-height:1.4}
+  .bubble .link{color:#0a64d8;text-decoration:underline;word-break:break-all;cursor:pointer;font-weight:500}
+  .tap-hint{
+    margin:6px auto 0;font-size:12px;color:#fff;background:var(--accent);padding:6px 12px;border-radius:999px;
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  .channel-note{padding:10px 14px 22px;font-size:11px;color:#8a8a93;text-align:center}
+
+  /* ---------- Reel screens ---------- */
+  .reel{background:#000;color:#fff}
+  .stage{position:absolute;inset:0;overflow:hidden;background:#0b1220}
+  .stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0b1220}
+  .placeholder{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:36px;gap:14px;
+    background:radial-gradient(circle at 50% 38%,#34507f 0%,#16233a 55%,#0b1220 100%);
+  }
+  .placeholder .orb{
+    width:120px;height:120px;border-radius:50%;
+    background:radial-gradient(circle,#ffb27a 0%,#e8501a 60%,rgba(232,80,26,0) 72%);
+    animation:breathe 2.8s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{transform:scale(.9);opacity:.8}50%{transform:scale(1.12);opacity:1}}
+  .placeholder h3{font-size:18px;font-weight:700}
+  .placeholder p{font-size:13px;color:#b9c6dc;line-height:1.5;max-width:270px}
+  .placeholder code{background:rgba(255,255,255,.1);padding:2px 6px;border-radius:6px;font-size:12px}
+
+  .reel-top{
+    position:absolute;top:0;left:0;right:0;padding:14px 14px 0;z-index:5;
+    background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,0));
+    padding-bottom:40px;
+  }
+  .segments{display:flex;gap:4px;margin-top:6px}
+  .seg{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden}
+  .seg i{display:block;height:100%;width:0;background:#fff}
+  .reel-meta{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+  .ep-pill{font-size:12px;font-weight:600;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:999px;backdrop-filter:blur(6px)}
+  .sound{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:12px;padding:5px 10px;border-radius:999px;cursor:pointer}
+  .caption{
+    position:absolute;left:16px;right:16px;bottom:34px;z-index:5;font-size:15px;line-height:1.45;
+    text-shadow:0 2px 8px rgba(0,0,0,.7);
+  }
+  .caption b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#ffb27a;margin-bottom:4px}
+
+  /* Decision overlay (the quiz) */
+  .overlay{
+    position:absolute;left:0;right:0;bottom:0;z-index:10;
+    background:#fff;color:var(--ink);border-radius:26px 26px 0 0;padding:22px 20px 26px;
+    transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 -12px 40px rgba(0,0,0,.35);
+  }
+  .overlay.show{transform:translateY(0)}
+  .overlay .handle{width:42px;height:4px;border-radius:2px;background:#d6d8de;margin:-8px auto 14px}
+  .overlay .tag{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+  .overlay h2{font-size:21px;margin:6px 0 4px;line-height:1.25}
+  .overlay .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .choice{
+    width:100%;text-align:left;display:flex;gap:12px;align-items:center;
+    padding:14px;border-radius:16px;border:2px solid #e3e5ea;background:#fff;
+    font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px;color:var(--ink);
+    transition:transform .12s,border-color .12s,background .12s;
+  }
+  .choice:active{transform:scale(.98)}
+  .choice:hover{border-color:var(--accent);background:#fff7f3}
+  .choice .letter{
+    flex:none;width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+  }
+  .choice small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+
+  /* ---------- Feedback screen ---------- */
+  .feedback{background:#f6f7fb;overflow:auto}
+  .fb-head{padding:46px 22px 22px;color:#fff}
+  .fb-head.bad{background:linear-gradient(160deg,#d64545,#a82c2c)}
+  .fb-head.good{background:linear-gradient(160deg,#1f8f5f,#136b45)}
+  .fb-head .big{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+  .fb-head h2{font-size:24px;margin-top:6px;line-height:1.2}
+  .fb-body{padding:18px 18px 26px;display:flex;flex-direction:column;gap:12px}
+  .stats{display:flex;gap:10px}
+  .stat{flex:1;background:#fff;border-radius:16px;padding:12px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .stat .v{font-size:20px;font-weight:800}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:2px}
+  .stat.badv .v{color:var(--red)} .stat.goodv .v{color:var(--green)}
+  .card{background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:14px;line-height:1.5}
+  .card h4{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--purple);margin-bottom:6px}
+  .btn{
+    border:none;border-radius:16px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;
+    background:var(--accent);color:#fff;width:100%;
+  }
+  .btn:active{background:var(--accent-dark)}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid #e3e5ea}
+
+  /* ---------- Reward screen ---------- */
+  .reward{background:linear-gradient(170deg,#241b6b,#5b4bd1 60%,#7a68ee);color:#fff;align-items:center;text-align:center;padding:52px 22px 24px;overflow:auto}
+  .reward .badge{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px}
+  .reward h2{font-size:26px;margin:14px 0 6px}
+  .reward p.lead{font-size:14px;color:#dcd7ff;max-width:280px;line-height:1.5}
+  .voucher{background:#fff;color:var(--ink);border-radius:22px;padding:18px;margin:20px 0 14px;width:100%;box-shadow:0 14px 30px rgba(0,0,0,.28)}
+  .voucher .vt{font-size:12px;color:var(--muted)}
+  .voucher .vn{font-size:18px;font-weight:800;margin:2px 0 12px}
+  .qr{width:170px;height:170px;margin:0 auto;display:block}
+  .voucher .vc{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.12em;margin-top:10px}
+  .voucher .vs{font-size:11px;color:var(--muted);margin-top:4px}
+  .next{background:rgba(255,255,255,.14);border-radius:16px;padding:12px 14px;font-size:13px;line-height:1.5;width:100%}
+  .next b{color:#ffd9c7}
+  .reward .btn{margin-top:14px;background:#fff;color:var(--purple)}
+  .demo-flag{font-size:10px;color:#cfc8ff;margin-top:10px}
+
+  @media (max-width:430px){
+    body{padding:0;gap:0;justify-content:flex-start}
+    .presenter{display:none}
+    .phone{width:100vw;height:100dvh;max-height:none;border:none;border-radius:0}
+  }
+</style>
+</head>
+<body>
+
+<div class="presenter">
+  <span>demo controls:</span>
+  <button onclick="restart()">Restart</button>
+  <button onclick="jump('reel')">Skip to Reel</button>
+  <button onclick="jump('decision')">Skip to Quiz</button>
+  <button onclick="jump('reward')">Skip to Reward</button>
+</div>
+
+<div class="phone" id="phone">
+
+  <!-- 1. The nudge -->
+  <section class="screen sms active" id="s-sms">
+    <div class="sms-top">
+      <div class="avatar">SW</div>
+      <div class="name">Swinburne x Medibank</div>
+    </div>
+    <div class="sms-body">
+      <div class="time">Today, 9:00 AM &middot; 1 week before departure</div>
+      <div class="bubble">
+        Hi Rafi! Learn how to avoid a <b>$500 hospital bill</b> in Australia and claim your free Swinburne coffee.
+        <br><br>
+        <span class="link" onclick="startEpisode()">oshc.swinburne.edu.au/ep1/x7Kq2</span>
+      </div>
+      <div class="tap-hint" onclick="startEpisode()">Tap the link to open (no app download)</div>
+    </div>
+    <div class="channel-note">Same link can arrive as a Medibank app push notification instead of SMS / WhatsApp.</div>
+  </section>
+
+  <!-- 2. Reel with decision overlay -->
+  <section class="screen reel" id="s-reel">
+    <div class="stage" id="stage-reel"></div>
+    <div class="reel-top">
+      <div class="segments"><div class="seg"><i id="prog-reel"></i></div></div>
+      <div class="reel-meta">
+        <span class="ep-pill">Episode 1 &middot; The Sunday Fever</span>
+        <button class="sound" id="sound-reel" onclick="toggleSound()">Sound off</button>
+      </div>
+    </div>
+    <div class="caption" id="cap-reel"><b>Sunday, 9:15 PM</b>Rafi feels terrible. His GP clinic is closed. What now?</div>
+
+    <div class="overlay" id="decision">
+      <div class="handle"></div>
+      <div class="tag">Your decision</div>
+      <h2>What should Rafi do?</h2>
+      <div class="sub">Tap an answer. You'll see what really happens.</div>
+      <button class="choice" onclick="choose('er')">
+        <span class="letter">A</span>
+        <span>Go to the hospital Emergency Room<small>Open 24/7, so it must be the safest option</small></span>
+      </button>
+      <button class="choice" onclick="choose('gp')">
+        <span class="letter">B</span>
+        <span>Find an after-hours GP<small>Use his OSHC provider's "find a doctor" tool</small></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 3. Consequence reel -->
+  <section class="screen reel" id="s-cons">
+    <div class="stage" id="stage-cons"></div>
+    <div class="reel-top">
+      <div class="segments"><div class="seg"><i id="prog-cons"></i></div></div>
+      <div class="reel-meta">
+        <span class="ep-pill" id="cons-pill">Consequence</span>
+        <span></span>
+      </div>
+    </div>
+    <div class="caption" id="cap-cons"></div>
+  </section>
+
+  <!-- 4. Feedback / learning -->
+  <section class="screen feedback" id="s-fb">
+    <div class="fb-head" id="fb-head">
+      <div class="big" id="fb-big"></div>
+      <h2 id="fb-title"></h2>
+    </div>
+    <div class="fb-body">
+      <div class="stats" id="fb-stats"></div>
+      <div class="card" id="fb-card"></div>
+      <button class="btn" id="fb-next" onclick="goReward()">Continue</button>
+    </div>
+  </section>
+
+  <!-- 5. Reward -->
+  <section class="screen reward" id="s-reward">
+    <span class="badge">Episode 1 complete</span>
+    <h2>Nice work!</h2>
+    <p class="lead">You now know when to use a GP, a pharmacy or the ER.</p>
+    <div class="voucher">
+      <div class="vt">Swinburne Campus Cafe</div>
+      <div class="vn">Free coffee voucher</div>
+      <svg class="qr" id="qr" viewBox="0 0 29 29" shape-rendering="crispEdges"></svg>
+      <div class="vc">OSHC-EP1-7KQ2</div>
+      <div class="vs">Show at the till. Valid for this semester.</div>
+    </div>
+    <div class="next"><b>Up next:</b> Episode 2, "The First Invoice", arrives in about 2 weeks. Learn how to claim money back with a photo of your receipt.</div>
+    <button class="btn" onclick="restart()">Replay demo</button>
+    <div class="demo-flag">Prototype only. QR code is a placeholder.</div>
+  </section>
+
+</div>
+
+<script>
+/* ============ Config ============ */
+const CLIPS = {
+  intro: { src: "reel1.mp4",    fallbackSecs: 7, label: "Sunday fever scene" },
+  er:    { src: "reel_er.mp4",  fallbackSecs: 5, label: "ER waiting room, 8-hour wait, big bill" },
+  gp:    { src: "reel_gp.mp4",  fallbackSecs: 5, label: "Quick after-hours GP visit" }
+};
+
+const OUTCOMES = {
+  er: {
+    good:false, big:"Costly choice", title:"Rafi waited 8 hours and got a large bill",
+    cap:"<b>ER visit, 11:40 PM</b>Eight hours later, a minor illness and a big out-of-pocket bill.",
+    stats:[["8 hrs","Wait time","badv"],["~$500","Out-of-pocket","badv"]],
+    card:"<h4>What to know</h4>Emergency departments prioritise life-threatening cases, so a minor illness can mean a very long wait. Non-urgent ER visits can also leave you with a gap payment. For a fever on a weekend night, an <b>after-hours GP</b> or pharmacy is usually faster and cheaper."
+  },
+  gp: {
+    good:true, big:"Smart choice", title:"Rafi saw a doctor within the hour",
+    cap:"<b>After-hours GP, 9:50 PM</b>Seen quickly, treated, and home before bedtime.",
+    stats:[["45 min","Total time","goodv"],["Low","Out-of-pocket","goodv"]],
+    card:"<h4>What to know</h4>Many after-hours GPs and bulk-billing clinics can be found through your OSHC provider's <b>find a doctor</b> tool. For genuine emergencies (chest pain, severe injury, trouble breathing) always call <b>000</b>. That is Episode 3."
+  }
+};
+
+/* ============ Helpers ============ */
+const $ = id => document.getElementById(id);
+let current = "sms", timer = null, muted = true, vid = null;
+
+function show(name){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $("s-"+name).classList.add("active");
+  current = name;
+}
+
+function clearTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+
+/* Plays a clip into a stage. Uses the real video if the file exists,
+   otherwise shows an animated placeholder so the demo still works. */
+function playClip(stageId, progId, clip, onEnd){
+  const stage = $(stageId), prog = $(progId);
+  clearTimer(); stage.innerHTML = ""; prog.style.width = "0";
+  let finished = false;
+  const done = () => { if(finished) return; finished = true; clearTimer(); prog.style.width="100%"; onEnd(); };
+
+  const usePlaceholder = () => {
+    stage.innerHTML = `<div class="placeholder"><div class="orb"></div>
+      <h3>${clip.label}</h3>
+      <p>Placeholder for the generated reel. Save your clip as <code>${clip.src}</code> in the same folder as this file and it will play here automatically.</p></div>`;
+    const total = clip.fallbackSecs*1000, t0 = Date.now();
+    clearTimer();
+    timer = setInterval(() => {
+      const p = Math.min(1,(Date.now()-t0)/total);
+      prog.style.width = (p*100)+"%";
+      if(p>=1) done();
+    }, 80);
+  };
+
+  const v = document.createElement("video");
+  v.src = clip.src; v.playsInline = true; v.muted = muted; v.preload = "auto";
+  v.setAttribute("playsinline",""); v.setAttribute("webkit-playsinline","");
+  vid = v;
+  v.addEventListener("error", () => { if(!finished && !stage.querySelector(".placeholder")) usePlaceholder(); });
+  v.addEventListener("loadeddata", () => {
+    stage.innerHTML = ""; stage.appendChild(v);
+    v.play().catch(() => usePlaceholder());
+  });
+  v.addEventListener("timeupdate", () => { if(v.duration) prog.style.width = (v.currentTime/v.duration*100)+"%"; });
+  v.addEventListener("ended", done);
+  // If the file is missing some browsers never fire "error" quickly, so also guard with a timeout.
+  setTimeout(() => { if(!finished && !stage.querySelector("video") && !stage.querySelector(".placeholder")) usePlaceholder(); }, 1200);
+}
+
+function toggleSound(){
+  muted = !muted;
+  if(vid) vid.muted = muted;
+  $("sound-reel").textContent = muted ? "Sound off" : "Sound on";
+}
+
+/* ============ Flow ============ */
+function startEpisode(){
+  show("reel");
+  $("decision").classList.remove("show");
+  $("cap-reel").style.display = "block";
+  playClip("stage-reel","prog-reel",CLIPS.intro, () => {
+    // Video pauses at the climax and the quiz slides up
+    $("cap-reel").style.display = "none";
+    $("decision").classList.add("show");
+  });
+}
+
+function choose(which){
+  $("decision").classList.remove("show");
+  const o = OUTCOMES[which];
+  show("cons");
+  $("cons-pill").textContent = o.good ? "Outcome: GP" : "Outcome: ER";
+  $("cap-cons").innerHTML = o.cap;
+  playClip("stage-cons","prog-cons",CLIPS[which], () => showFeedback(which));
+  window.__choice = which;   // in the real build this is logged to the cloud database
+}
+
+function showFeedback(which){
+  const o = OUTCOMES[which];
+  show("fb");
+  $("fb-head").className = "fb-head " + (o.good ? "good":"bad");
+  $("fb-big").textContent = o.big;
+  $("fb-title").textContent = o.title;
+  $("fb-stats").innerHTML = o.stats.map(s => `<div class="stat ${s[2]}"><div class="v">${s[0]}</div><div class="l">${s[1]}</div></div>`).join("");
+  $("fb-card").innerHTML = o.card;
+  $("fb-next").textContent = o.good ? "Claim my reward" : "Got it. Claim my reward";
+}
+
+function goReward(){ show("reward"); drawQR(); }
+
+function restart(){ clearTimer(); $("decision").classList.remove("show"); show("sms"); }
+
+function jump(where){
+  clearTimer();
+  if(where==="reel") startEpisode();
+  if(where==="decision"){ show("reel"); $("stage-reel").innerHTML=`<div class="placeholder"><div class="orb"></div><h3>${CLIPS.intro.label}</h3></div>`; $("prog-reel").style.width="100%"; $("cap-reel").style.display="none"; $("decision").classList.add("show"); }
+  if(where==="reward") goReward();
+}
+
+/* Decorative placeholder QR (not scannable) */
+function drawQR(){
+  const n = 29, svg = $("qr"); let seed = 7, out = `<rect width="29" height="29" fill="#fff"/>`;
+  const rnd = () => (seed = (seed*9301+49297)%233280)/233280;
+  const finder = (x,y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#111"/><rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/><rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#111"/>`;
+  const inFinder = (x,y) => (x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9);
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++){
+    if(inFinder(x,y)) continue;
+    if(rnd()>0.52) out += `<rect x="${x}" y="${y}" width="1" height="1" fill="#111"/>`;
+  }
+  out += finder(0,0)+finder(n-7,0)+finder(0,n-7);
+  svg.innerHTML = out;
+}
+</script>
+</body>
+</html>
