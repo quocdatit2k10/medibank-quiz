@@ -1,0 +1,31 @@
+<main class="stage">
+  <section class="phone" aria-label="Member app preview">
+    <header class="status-bar">
+      <span>{{ clock }}</span>
+      <span class="signal" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>100%</span>
+    </header>
+
+    @if (notificationVisible()) {
+      <button type="button" class="push" (click)="openNotification()">
+        <span class="push__icon" aria-hidden="true">M</span>
+        <span class="push__body">
+          <span class="push__meta">MEDIBANK · now</span>
+          <strong>New: 2-minute OSHC essentials</strong>
+          <span>Watch a short video, then test yourself with a quick quiz.</span>
+        </span>
+        <span class="push__close" role="button" aria-label="Dismiss" (click)="dismissNotification($event)">×</span>
+      </button>
+    }
+
+    <div class="screen">
+      <router-outlet />
+    </div>
+  </section>
+
+  <aside class="controls" aria-label="Demo controls">
+    <p class="controls__label">Demo controls</p>
+    <button type="button" class="btn btn--primary" (click)="simulatePush()">Simulate push notification</button>
+    <button type="button" class="btn btn--ghost" (click)="resetJourney()">Reset journey</button>
+  </aside>
+</main>

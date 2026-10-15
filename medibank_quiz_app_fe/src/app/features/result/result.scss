@@ -1,0 +1,106 @@
+:host {
+  display: block;
+}
+
+.page {
+  align-items: stretch;
+
+  > .pill {
+    align-self: flex-start;
+  }
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  --ring: var(--danger);
+
+  &--pass {
+    --ring: var(--success);
+  }
+}
+
+.ring {
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 128px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: conic-gradient(var(--ring) calc(var(--pct) * 1%), var(--surface-alt) 0);
+
+  span {
+    display: grid;
+    place-items: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--surface);
+    font-size: 28px;
+    font-weight: 800;
+  }
+}
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: var(--surface-alt);
+    font-size: 14px;
+
+    .hint {
+      font-size: 14px;
+    }
+  }
+
+  &__badge {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--danger);
+    color: #fff;
+    font-weight: 900;
+    font-size: 13px;
+  }
+
+  &__item--ok &__badge {
+    background: var(--success);
+  }
+
+  &__q {
+    margin-bottom: 4px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.link-btn {
+  padding: 8px;
+  border: 0;
+  background: none;
+  color: var(--navy);
+  font: 600 15px var(--font);
+  cursor: pointer;
+}

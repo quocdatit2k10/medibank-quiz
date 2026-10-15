@@ -1,0 +1,39 @@
+<section class="page">
+  <span class="pill">Step 2 of 2 · Done</span>
+
+  <div class="hero" [class.hero--pass]="passed()">
+    <div class="ring" [style.--pct]="percent()">
+      <span>{{ percent() }}%</span>
+    </div>
+    <h1 class="title">{{ passed() ? 'Nice work, ' + journey.memberName() + '!' : 'Almost there' }}</h1>
+    <p class="hint">
+      {{ journey.correctCount() }} of {{ total() }} correct · {{ journey.totalPoints() }} points
+      @if (quiz(); as q) {
+        <br />Pass mark {{ q.passMark }}%
+      }
+    </p>
+  </div>
+
+  <ol class="review">
+    @for (item of review(); track item.questionId) {
+      <li class="review__item" [class.review__item--ok]="item.correct">
+        <span class="review__badge" aria-hidden="true">{{ item.correct ? '✓' : '✕' }}</span>
+        <div>
+          <p class="review__q">{{ item.text }}</p>
+          @if (item.correct) {
+            <p class="hint">{{ item.correctOption }} · +{{ item.points }}</p>
+          } @else {
+            <p class="hint">Your answer: {{ item.chosenOption }}</p>
+            <p class="hint">Correct: <strong>{{ item.correctOption }}</strong></p>
+          }
+        </div>
+      </li>
+    }
+  </ol>
+
+  <div class="actions">
+    <button type="button" class="btn btn--primary btn--block" (click)="retake()">Retake quiz</button>
+    <button type="button" class="btn btn--ghost btn--block" (click)="rewatch()">Rewatch video</button>
+    <button type="button" class="link-btn" (click)="home()">Back to home</button>
+  </div>
+</section>

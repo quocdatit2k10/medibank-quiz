@@ -1,0 +1,62 @@
+{
+  "title": "OSHC Essentials Quiz",
+  "passMark": 70,
+  "secondsPerQuestion": 20,
+  "questions": [
+    {
+      "id": 1,
+      "text": "What does OSHC stand for?",
+      "options": [
+        "Overseas Student Health Cover",
+        "Official Student Hospital Card",
+        "Overseas Study Health Certificate",
+        "Online Student Help Centre"
+      ],
+      "answerIndex": 0,
+      "explanation": "OSHC is Overseas Student Health Cover — health insurance for international students in Australia."
+    },
+    {
+      "id": 2,
+      "text": "Who is OSHC designed for?",
+      "options": [
+        "Australian citizens",
+        "International students on a student visa",
+        "Tourists on a holiday visa",
+        "Permanent residents"
+      ],
+      "answerIndex": 1,
+      "explanation": "Students on an Australian student visa are generally required to hold OSHC for the length of their visa."
+    },
+    {
+      "id": 3,
+      "text": "In a medical emergency in Australia, which number should you call?",
+      "options": ["911", "112 only", "000", "999"],
+      "answerIndex": 2,
+      "explanation": "000 (triple zero) is Australia's emergency number for ambulance, fire and police."
+    },
+    {
+      "id": 4,
+      "text": "Where can you see your cover details and make a claim?",
+      "options": [
+        "Only by visiting a branch",
+        "In the member app or online member services",
+        "By emailing your university",
+        "You can't see them until your visa ends"
+      ],
+      "answerIndex": 1,
+      "explanation": "Your cover, digital membership card and claims are available in the member app and online."
+    },
+    {
+      "id": 5,
+      "text": "What should you do if your visa is extended?",
+      "options": [
+        "Nothing — cover extends automatically",
+        "Cancel your cover",
+        "Extend your OSHC so it matches your new visa dates",
+        "Switch to travel insurance"
+      ],
+      "answerIndex": 2,
+      "explanation": "You need to keep your OSHC active for the full duration of your visa, so extend it when your visa changes."
+    }
+  ]
+}

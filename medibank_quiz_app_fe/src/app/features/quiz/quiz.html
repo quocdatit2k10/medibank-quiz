@@ -1,0 +1,71 @@
+<section class="page quiz">
+  @switch (state().status) {
+    @case ('loading') {
+      <p class="hint center">Loading questions…</p>
+    }
+    @case ('error') {
+      <div class="center">
+        <p class="lead">We couldn’t load the quiz.</p>
+        <button type="button" class="btn btn--primary" (click)="retry()">Try again</button>
+      </div>
+    }
+    @case ('ready') {
+      @if (question(); as q) {
+        <header class="top">
+          <span class="pill">Question {{ index() + 1 }} / {{ total() }}</span>
+          <span class="score" aria-label="Score">{{ score() }} pts</span>
+        </header>
+
+        <div class="timer" [class.timer--low]="secondsLeft() <= 5 && phase() === 'answering'">
+          <div class="timer__track">
+            <span class="timer__fill" [style.width.%]="timerPct()"></span>
+          </div>
+          <span class="timer__num">{{ secondsShown() }}</span>
+        </div>
+
+        <h1 class="question">{{ q.text }}</h1>
+
+        <div class="options" role="group" aria-label="Answer options">
+          @for (option of q.options; track $index) {
+            <button
+              type="button"
+              class="option"
+              [style.--tile]="'var(--opt-' + $index + ')'"
+              [attr.data-state]="optionState($index)"
+              [disabled]="phase() === 'revealed'"
+              (click)="choose($index)"
+            >
+              <span class="option__shape" aria-hidden="true">{{ shapes[$index] }}</span>
+              <span class="option__text">{{ option }}</span>
+              @if (optionState($index) === 'correct') {
+                <span class="option__mark" aria-label="Correct answer">✓</span>
+              } @else if (optionState($index) === 'wrong') {
+                <span class="option__mark" aria-label="Your answer">✕</span>
+              }
+            </button>
+          }
+        </div>
+
+        @if (phase() === 'revealed') {
+          <div class="feedback" [class.feedback--ok]="lastPoints() > 0" aria-live="polite">
+            <strong>
+              @if (lastPoints() > 0) {
+                Correct! +{{ lastPoints() }}
+              } @else if (selected() === null) {
+                Time’s up
+              } @else {
+                Not quite
+              }
+            </strong>
+            @if (q.explanation) {
+              <p>{{ q.explanation }}</p>
+            }
+          </div>
+          <button type="button" class="btn btn--primary btn--block next" (click)="next()">
+            {{ isLast() ? 'See my result' : 'Next question' }}
+          </button>
+        }
+      }
+    }
+  }
+</section>

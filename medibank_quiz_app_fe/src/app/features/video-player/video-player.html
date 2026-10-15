@@ -1,0 +1,93 @@
+<section class="page">
+  <div class="heading">
+    <span class="pill">Step 1 of 2</span>
+    <h1 class="title">Watch the video</h1>
+    <p class="hint">Watch to the end to unlock the quiz.</p>
+  </div>
+
+  <div class="player" [class.player--done]="journey.videoCompleted()">
+    <video
+      #video
+      class="player__video"
+      [src]="journey.video().url"
+      playsinline
+      preload="metadata"
+      (click)="togglePlay()"
+      (loadedmetadata)="onLoadedMetadata()"
+      (timeupdate)="onTimeUpdate()"
+      (seeking)="onSeeking()"
+      (play)="playing.set(true)"
+      (pause)="playing.set(false)"
+      (ended)="onEnded()"
+      (error)="onError()"
+    ></video>
+
+    @if (loadError()) {
+      <div class="player__overlay">
+        <p>This video couldn’t be played. Try an MP4 (H.264) or WebM file.</p>
+      </div>
+    } @else if (!playing() && !journey.videoCompleted()) {
+      <button type="button" class="player__big-play" (click)="togglePlay()" aria-label="Play video">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+      </button>
+    }
+
+    <div class="controls">
+      <button type="button" class="icon-btn" (click)="togglePlay()" [attr.aria-label]="playing() ? 'Pause' : 'Play'">
+        @if (playing()) {
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+        } @else {
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+        }
+      </button>
+
+      <div
+        class="bar"
+        role="slider"
+        aria-label="Video progress"
+        [attr.aria-valuenow]="currentTime().toFixed(0)"
+        aria-valuemin="0"
+        [attr.aria-valuemax]="duration().toFixed(0)"
+        (click)="seek($event)"
+      >
+        <span class="bar__watched" [style.width.%]="watchedProgress()"></span>
+        <span class="bar__fill" [style.width.%]="progress()"></span>
+      </div>
+
+      <span class="time">-{{ format(remaining()) }}</span>
+
+      <button type="button" class="icon-btn" (click)="toggleMute()" [attr.aria-label]="muted() ? 'Unmute' : 'Mute'">
+        @if (muted()) {
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9zm12.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z" /></svg>
+        } @else {
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9zm12.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z" /></svg>
+        }
+      </button>
+    </div>
+  </div>
+
+  <div class="source">
+    <span class="hint source__name" [title]="journey.video().name">Now playing: {{ journey.video().name }}</span>
+    <div class="source__actions">
+      <label class="link">
+        Choose video from device
+        <input type="file" accept="video/*" (change)="onFilePicked($event)" hidden />
+      </label>
+      @if (journey.video().isObjectUrl) {
+        <button type="button" class="link" (click)="useSample()">Use sample video</button>
+      }
+    </div>
+  </div>
+
+  <div class="cta">
+    @if (journey.videoCompleted()) {
+      <p class="done">✓ Video complete</p>
+    }
+    <button type="button" class="btn btn--primary btn--block" [disabled]="!journey.videoCompleted()" (click)="startQuiz()">
+      Start quiz
+    </button>
+    @if (journey.videoCompleted()) {
+      <button type="button" class="btn btn--ghost btn--block" (click)="replay()">Watch again</button>
+    }
+  </div>
+</section>

@@ -1,0 +1,141 @@
+.stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 32px 16px;
+  flex-wrap: wrap;
+}
+
+.phone {
+  position: relative;
+  width: min(390px, 100%);
+  height: min(800px, calc(100vh - 64px));
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 14px solid var(--navy);
+  border-radius: 56px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -20px rgba(31, 52, 72, 0.35);
+}
+
+.status-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  height: 64px;
+  background: #f6f8f9;
+  color: #4a5d6e;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.signal {
+  display: inline-flex;
+  gap: 3px;
+
+  i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #4a5d6e;
+  }
+}
+
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.push {
+  position: absolute;
+  top: 72px;
+  left: 12px;
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 14px 14px 12px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 30px -8px rgba(31, 52, 72, 0.35);
+  backdrop-filter: blur(12px);
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  animation: push-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+
+  &__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--navy);
+    color: var(--lime);
+    font-weight: 800;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 14px;
+    line-height: 1.35;
+
+    strong {
+      font-size: 15px;
+    }
+  }
+
+  &__meta {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  &__close {
+    margin-left: auto;
+    padding: 0 4px;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1;
+  }
+}
+
+@keyframes push-in {
+  from {
+    transform: translateY(-120%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 260px;
+
+  &__label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+}
