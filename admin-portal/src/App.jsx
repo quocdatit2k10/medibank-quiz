@@ -13,6 +13,7 @@ import ContentStudio from './pages/ContentStudio'
 import VideoList from './videos/VideoList'
 import QuizList from './quizzes/QuizList'
 import Packages from './pages/Packages'
+import PackageViewer from './pages/PackageViewer'
 
 function Sidebar() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
             <Route path="/videos" element={<VideoList />} />
             <Route path="/quizzes" element={<QuizList />} />
             <Route path="/packages" element={<Packages />} />
+            <Route path="/view/:id" element={<PackageViewer />} />
           </Routes>
         </div>
       </div>

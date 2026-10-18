@@ -337,3 +337,22 @@ def delete_package(pkg_id: str):
     if pkg_id not in packages_db:
         raise HTTPException(status_code=404, detail="Package not found")
     del packages_db[pkg_id]
+
+
+@app.get("/api/v1/packages/{pkg_id}/content", tags=["Packages"])
+def get_package_content(pkg_id: str):
+    """Return a package with the full video and quiz data for viewing/streaming."""
+    if pkg_id not in packages_db:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    pkg = packages_db[pkg_id]
+    video = videos_db.get(pkg["videoId"])
+    quiz = quizzes_db.get(pkg["quizId"])
+
+    return {
+        "id": pkg["id"],
+        "timing": pkg["timing"],
+        "active": pkg["active"],
+        "video": video,
+        "quiz": quiz,
+    }
