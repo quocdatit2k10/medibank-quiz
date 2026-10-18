@@ -45,7 +45,7 @@ medibank-quiz/
 │   │   ├── App.jsx
 │   │   └── pages/        # Dashboard, Videos, Quizzes, Content
 │   └── vite.config.js    # Proxies /api → backend
-└── user-app/             # Angular 18 (standalone) — Student UI (port 4200)
+└── medibank_quiz_app_fe/  # Angular 18 (standalone) — Student UI (port 4200)
     ├── src/
     │   ├── main.ts
     │   └── app/
@@ -59,7 +59,7 @@ medibank-quiz/
 |--------------|-------------------------------------------------------|------|
 | Backend      | `cd backend && source venv/bin/activate && uvicorn main:app --reload` | 8000 |
 | Admin Portal | `cd admin-portal && npm run dev`                      | 5173 |
-| User App     | `cd user-app && npm start`                            | 4200 |
+| User App     | `cd medibank_quiz_app_fe && npm start`                 | 4200 |
 
 API docs (Swagger): http://localhost:8000/docs
 
